@@ -1,0 +1,10 @@
+# python
+__pycache__/
+*.py[cod]
+.env
+*.sqlite
+# docker
+*.pyc
+.env.docker
+dist/
+build/
