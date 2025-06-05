@@ -2,6 +2,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 
+# ← Add this import
+from .routes import bp
+
 db = SQLAlchemy()
 
 def create_app():
@@ -21,6 +24,9 @@ def create_app():
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
     db.init_app(app)
+
+    # ← Register the blueprint here
+    app.register_blueprint(bp)
 
     # trivial health check
     @app.route("/")
