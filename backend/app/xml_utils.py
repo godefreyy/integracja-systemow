@@ -40,24 +40,36 @@ def _get_or_create(model, **kw):
 
 
 # ---------- GENERATE ----------
+from lxml import etree
+from io import BytesIO
+from .models import Region, PropertyType, InterestRate, HousingPrice
+
 def export_stream():
     root = etree.Element("dataset")
 
-    ir_el = etree.SubElement(root, "interestRates")
-    for ir in InterestRate.query.order_by(InterestRate.rate_date):
-        etree.SubElement(
-            ir_el, "rate",
-            date=str(ir.rate_date),
-            value=str(ir.value)
-        )
+    # 1) Build <interestRates> block
+    ir_wrapper = etree.SubElement(root, "interestRates")
+    for ir in InterestRate.query.order_by(InterestRate.rate_date).all():
+        # Each <rate date="…" value="…" />
+        node = etree.SubElement(ir_wrapper, "rate")
+        node.set("date", ir.rate_date.isoformat())
+        node.set("value", str(ir.value))
 
-    hp_el = etree.SubElement(root, "housingPrices")
-    for hp in HousingPrice.query:
-        etree.SubElement(
-            hp_el, "price",
-            region=hp.region.name,
-            type=hp.type.name,
-            quarter=hp.quarter,
-            average=str(hp.average_price)
-        )
-    return etree.tostring(root, xml_declaration=True, encoding="utf-8")
+    # 2) Build <housingPrices> block
+    hp_wrapper = etree.SubElement(root, "housingPrices")
+    for hp in HousingPrice.query.all():
+        node = etree.SubElement(hp_wrapper, "price")
+        node.set("region", hp.region.name)
+        node.set("type", hp.type.name)
+        node.set("quarter", hp.quarter)
+        node.set("average", f"{hp.average_price:.2f}")
+
+    # Serialize to bytes with indentation
+    xml_bytes = etree.tostring(
+        root,
+        xml_declaration=True,
+        encoding="utf-8",
+        pretty_print=True
+    )
+    return xml_bytes
+
