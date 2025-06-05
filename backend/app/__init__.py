@@ -2,9 +2,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
 
-# ← Add this import
-from .routes import bp
-
 db = SQLAlchemy()
 
 def create_app():
@@ -25,12 +22,8 @@ def create_app():
 
     db.init_app(app)
 
-    # ← Register the blueprint here
+    # Only now import and register the blueprint(s):
+    from .routes import bp
     app.register_blueprint(bp)
-
-    # trivial health check
-    @app.route("/")
-    def hello():
-        return "Integracja systemów – backend alive!"
 
     return app
