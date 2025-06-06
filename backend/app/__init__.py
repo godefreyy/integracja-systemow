@@ -5,9 +5,7 @@ from pathlib import Path
 db = SQLAlchemy()
 
 def create_app():
-    """
-    Factory pattern – lets CLI or gunicorn import the same app.
-    """
+
     app = Flask(__name__)
 
     # configuration 

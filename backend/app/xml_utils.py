@@ -1,83 +1,84 @@
-from datetime import datetime
+import xml.etree.ElementTree as ET
+from datetime import date
 from decimal import Decimal
-from io import BytesIO
-
-from lxml import etree
 from .models import db, Region, PropertyType, InterestRate, HousingPrice
 
 
-# XML  ->  DATABASE
+# IMPORT   
+
 def import_stream(stream):
-    """
-    Parse uploaded XML and upsert rows into MySQL.
-    """
-    root = etree.parse(stream).getroot()
+    """Wczytaj XML i uaktualnij bazę (upsert)."""
+    tree = ET.parse(stream)
+    root = tree.getroot()
 
-    # Interest rates -
-    for rate_el in root.xpath("./interestRates/rate"):
-        date_str = rate_el.attrib["date"]
-        value_str = rate_el.attrib["value"]
+    # ceny procentowe 
+    for node in root.find("interestRates") or []:
+        d = date.fromisoformat(node.get("date"))
+        ir = InterestRate.query.filter_by(rate_date=d).first() or InterestRate(rate_date=d)
+        ir.value = Decimal(node.get("value"))
+        db.session.add(ir)
 
-        d = datetime.fromisoformat(date_str).date()
-        v = Decimal(value_str)
-
-        obj = (
-            InterestRate.query.filter_by(rate_date=d).first()
-            or InterestRate(rate_date=d)
+    # ceny mieszkan
+    for node in root.find("housingPrices") or []:
+        region = _get_or_create(Region,       name=node.get("region"))
+        ptype  = _get_or_create(PropertyType, name=node.get("type"))
+        hp = HousingPrice.query.filter_by(
+            quarter=node.get("quarter"), region=region, type=ptype
+        ).first() or HousingPrice(
+            quarter=node.get("quarter"), region=region, type=ptype
         )
-        obj.value = v
-        db.session.add(obj)
-
-    # Housing prices 
-    for price_el in root.xpath("./housingPrices/price"):
-        region_name = price_el.attrib["region"]
-        type_name = price_el.attrib["type"]
-        quarter = price_el.attrib["quarter"]
-        average = Decimal(price_el.attrib["average"])
-
-        region = Region.query.filter_by(name=region_name).first() or Region(name=region_name)
-        ptype  = PropertyType.query.filter_by(name=type_name).first() or PropertyType(name=type_name)
-
-        db.session.add_all([region, ptype])
-        db.session.flush()
-
-        hp = HousingPrice(
-            region=region,
-            type=ptype,
-            quarter=quarter,
-            average_price=average,
-        )
+        hp.average_price = Decimal(node.get("average"))
         db.session.add(hp)
 
     db.session.commit()
 
 
-# DATABASE  ->  XML
+def _get_or_create(model, **kw):
+    obj = model.query.filter_by(**kw).first()
+    if obj:
+        return obj
+    obj = model(**kw)
+    db.session.add(obj)
+    return obj
 
-def export_stream():
-    root = etree.Element("dataset")
+# EXPORT 
 
-    # interestRates
-    ir_wrapper = etree.SubElement(root, "interestRates")
-    for ir in InterestRate.query.order_by(InterestRate.rate_date).all():
-        node = etree.SubElement(ir_wrapper, "rate")
-        node.set("date", ir.rate_date.isoformat())
-        node.set("value", str(ir.value))
+def export_stream() -> bytes:
+    """Zbuduj XML z aktualnej zawartości DB i zwróć jako bytes."""
+    root = ET.Element("dataset")
 
-    # housingPrices
-    hp_wrapper = etree.SubElement(root, "housingPrices")
-    for hp in HousingPrice.query.all():
-        node = etree.SubElement(hp_wrapper, "price")
-        node.set("region", hp.region.name)
-        node.set("type", hp.type.name)
-        node.set("quarter", hp.quarter)
-        node.set("average", f"{hp.average_price:.2f}")
+    # stopy procentowe
+    irs = ET.SubElement(root, "interestRates")
+    for ir in InterestRate.query.order_by(InterestRate.rate_date):
+        ET.SubElement(
+            irs,
+            "rate",
+            date=ir.rate_date.isoformat(),
+            value=str(ir.value),
+        )
 
-    # pretty-print XML
-    xml_bytes = etree.tostring(
-        root,
-        xml_declaration=True,
-        encoding="utf-8",
-        pretty_print=True
-    )
-    return xml_bytes
+    # ceny mieszkan
+    hps = ET.SubElement(root, "housingPrices")
+    for hp in HousingPrice.query.order_by(HousingPrice.quarter):
+        ET.SubElement(
+            hps,
+            "price",
+            region=hp.region.name,
+            type=hp.type.name,
+            quarter=hp.quarter,
+            average=str(hp.average_price),
+        )
+
+    #PRETTY PRINT
+    tree = ET.ElementTree(root)
+
+    try:                                    
+        ET.indent(tree, space="  ", level=0)
+        return ET.tostring(
+            root, encoding="utf-8", xml_declaration=True
+        )
+    except AttributeError:                 
+        import xml.dom.minidom as minidom
+        rough = ET.tostring(root, encoding="utf-8")
+        dom = minidom.parseString(rough)
+        return dom.toprettyxml(indent="  ", encoding="utf-8")
