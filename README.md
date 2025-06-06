@@ -7,4 +7,4 @@ docker compose exec app python -m app.cli   # create tables once
 link:
 http://localhost:5000
 
-Just download DevDb by Damilola Olowookere, press Ctrl + K + D, and you’ll see the database.
+In Visual Studio Code just download DevDb by Damilola Olowookere, press Ctrl + K + D, and you’ll see the database.
