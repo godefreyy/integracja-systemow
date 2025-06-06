@@ -1,0 +1,14 @@
+<rates>
+  <rate year="2015" month="01" value="2.00"/>
+  <rate year="2016" month="01" value="1.50"/>
+  <rate year="2017" month="01" value="1.50"/>
+  <rate year="2018" month="01" value="1.50"/>
+  <rate year="2019" month="01" value="1.50"/>
+  <rate year="2020" month="01" value="1.50"/>
+  <rate year="2021" month="01" value="0.10"/>
+  <rate year="2022" month="01" value="2.25"/>
+  <rate year="2023" month="01" value="6.75"/>
+  <rate year="2024" month="01" value="5.75"/>
+  <rate year="2025" month="01" value="5.75"/>
+</rates>
+
