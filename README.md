@@ -1,6 +1,5 @@
-# Integracja Systemów – demo project (Flask + MySQL)
+# Integracja Systemów – (Flask + MySQL)
 
-Milestone 1: **Import / Export XML**
 
 docker compose up --build -d      # build + run
 docker compose exec app python -m app.cli   # create tables once
