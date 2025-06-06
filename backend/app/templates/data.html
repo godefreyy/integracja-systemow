@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Data round-trip demo</title>
+  <style>
+    body {font-family: sans-serif; margin:2rem;}
+    section {border:1px solid #999; padding:1rem; margin-bottom:1rem;}
+    h2 {margin-top:0}
+    form {display:inline-block; margin-right:1rem;}
+  </style>
+</head>
+<body>
+  <h1>XML / JSON / YAML round-trip</h1>
+
+  {% with msgs = get_flashed_messages(with_categories=true) %}
+    {% if msgs %}
+      <ul>
+        {% for cat,msg in msgs %}
+          <li style="color:{{'red' if cat=='error' else 'green'}}">{{ msg }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  {% endwith %}
+
+  <section>
+    <h2>XML</h2>
+    <a href="{{ url_for('data.xml_export') }}">⬇ Download XML</a>
+    <form action="{{ url_for('data.xml_import') }}" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".xml" required>
+      <button>⬆ Upload &amp; Store</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>JSON</h2>
+    <a href="{{ url_for('data.json_export') }}">⬇ Download JSON</a>
+    <form action="{{ url_for('data.json_import') }}" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".json,application/json" required>
+      <button>⬆ Upload &amp; Store</button>
+    </form>
+  </section>
+
+  <section>
+    <h2>YAML</h2>
+    <a href="{{ url_for('data.yaml_export') }}">⬇ Download YAML</a>
+    <form action="{{ url_for('data.yaml_import') }}" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".yml,.yaml,text/yaml,application/x-yaml" required>
+      <button>⬆ Upload &amp; Store</button>
+    </form>
+  </section>
+</body>
+</html>

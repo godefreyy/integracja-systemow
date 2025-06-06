@@ -1,10 +1,13 @@
-# python
+# Python
 __pycache__/
-*.py[cod]
-.env
-*.sqlite
-# docker
 *.pyc
-.env.docker
-dist/
-build/
+*.pyo
+*.pyd
+.venv/
+.env
+
+# Docker
+*.log
+
+# VS Code
+.vscode/

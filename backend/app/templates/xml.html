@@ -1,12 +1,37 @@
 <!doctype html>
-<title>XML import / export</title>
-<h1>XML import / export</h1>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8">
+    <title>XML Import / Export</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; }
+      form, .buttons { margin-bottom: 1.5rem; }
+      input[type="file"] { margin-right: 1rem; }
+      .flash { padding: .5rem 1rem; border-radius: 4px; margin-bottom: .8rem; }
+      .flash.success { background: #d9f2d9; }
+      .flash.error   { background: #f2d9d9; }
+    </style>
+  </head>
+  <body>
+    <h1>Zarządzanie XML</h1>
 
-<form action="/xml/import" method="post" enctype="multipart/form-data">
-  <p><input type="file" name="xmlfile" accept=".xml">
-     <button type="submit">Upload &amp; store</button></p>
-</form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-<p>
-  <a href="/xml/export">Download XML from DB</a>
-</p>
+    <form action="{{ url_for('xml.xml_import') }}" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" accept=".xml">
+      <button type="submit">Upload &amp; Store</button>
+    </form>
+
+    <div class="buttons">
+      <a href="{{ url_for('xml.xml_export') }}">
+        <button>Download XML from DB</button>
+      </a>
+    </div>
+  </body>
+</html>
