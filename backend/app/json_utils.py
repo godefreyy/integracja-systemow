@@ -1,8 +1,3 @@
-"""
-json_utils.py – export / import helpers for JSON and YAML.
-Uses the same SQLAlchemy models that xml_utils.py relies on.
-"""
-
 import json
 import yaml
 from datetime import date
@@ -11,7 +6,7 @@ from io import BytesIO
 from .models import db, Region, PropertyType, InterestRate, HousingPrice
 
 
-# ---------- helpers ----------------------------------------------------------
+# helpers 
 
 
 def _money(value: str | Decimal):
@@ -31,7 +26,7 @@ def _get_or_create(model, **filters):
     return obj
 
 
-# ---------- EXPORT -----------------------------------------------------------
+# EXPORT
 
 
 def dump_json() -> bytes:
@@ -60,14 +55,14 @@ def dump_json() -> bytes:
 def dump_yaml() -> bytes:
     """Return a YAML document (bytes) representing current DB snapshot."""
     payload = yaml.safe_dump(
-        yaml.safe_load(dump_json().decode("utf-8")),  # reuse JSON structure
+        yaml.safe_load(dump_json().decode("utf-8")),
         sort_keys=False,
         allow_unicode=True,
     )
     return payload.encode("utf-8")
 
 
-# ---------- IMPORT -----------------------------------------------------------
+# IMPORT 
 
 
 def load_json(stream):
@@ -76,7 +71,6 @@ def load_json(stream):
     Every entry is inserted if missing; duplicates are ignored.
     """
     content = json.load(stream)
-    # allow both {"dataset":{…}} and flat {"interestRates": …}
     if "dataset" in content:
         content = content["dataset"]
 
@@ -110,7 +104,6 @@ def load_json(stream):
 def load_yaml(stream):
     """Read YAML stream, convert to JSON dict and reuse load_json()."""
     data = yaml.safe_load(stream)
-    # allow both {"dataset":{…}} and flat {"interestRates": …}
     if "dataset" in data:
         data = data["dataset"]
     load_json(BytesIO(json.dumps(data).encode("utf-8")))

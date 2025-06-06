@@ -4,17 +4,15 @@ from flask import (
 )
 from io import BytesIO
 
-# XML helpers (already exist)
 from .xml_utils import export_stream as xml_dump
 from .xml_utils import import_stream as xml_load
 
-# NEW: JSON / YAML helpers
 from .json_utils import dump_json, dump_yaml, load_json, load_yaml
 
-bp = Blueprint("data", __name__)   # no url_prefix → /xml, /json, /yaml live at root
+bp = Blueprint("data", __name__)
 
 
-# ────────────────────────────── UI page ──────────────────────────────────────
+# UI page 
 @bp.route("/", methods=["GET"])
 def home():
     """
@@ -24,7 +22,7 @@ def home():
     return render_template("data.html")
 
 
-# ────────────────────────────── XML ──────────────────────────────────────────
+# XML
 @bp.route("/xml/export")
 def xml_export():
     return send_file(
@@ -46,7 +44,7 @@ def xml_import():
     return redirect(url_for("data.home"))
 
 
-# ────────────────────────────── JSON ─────────────────────────────────────────
+# JSON
 @bp.route("/json/export")
 def json_export():
     return send_file(
@@ -68,7 +66,7 @@ def json_import():
     return redirect(url_for("data.home"))
 
 
-# ────────────────────────────── YAML ─────────────────────────────────────────
+# YAML
 @bp.route("/yaml/export")
 def yaml_export():
     return send_file(

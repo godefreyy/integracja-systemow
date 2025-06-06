@@ -7,9 +7,9 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=development        # auto-reload templates
+      - FLASK_ENV=development
     volumes:
-      - ./backend/app:/srv/app/app   # hot-reload code during dev (optional)
+      - ./backend/app:/srv/app/app
 
   db:
     image: mysql:8.4

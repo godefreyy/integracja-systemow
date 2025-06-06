@@ -10,21 +10,20 @@ def create_app():
     """
     app = Flask(__name__)
 
-    # ---- configuration ----------------------------------------------------
+    # configuration 
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         "mysql+pymysql://app:app@db:3306/integracja"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     app.config["SECRET_KEY"] = "change-me-in-prod"
 
-    # ---- init extensions ---------------------------------------------------
+    # init extensions
     db.init_app(app)
 
-    # ---- blueprints / routes ----------------------------------------------
+    # blueprints / routes 
     from .routes import bp
     app.register_blueprint(bp)
 
-    # ---- template auto-reload (handy in dev) -------------------------------
     app.config["TEMPLATES_AUTO_RELOAD"] = True
 
     return app

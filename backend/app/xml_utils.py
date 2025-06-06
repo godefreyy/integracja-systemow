@@ -6,16 +6,14 @@ from lxml import etree
 from .models import db, Region, PropertyType, InterestRate, HousingPrice
 
 
-# ---------------------------------------------------------------------------
-# XML  ➜  DATABASE
-# ---------------------------------------------------------------------------
+# XML  ->  DATABASE
 def import_stream(stream):
     """
     Parse uploaded XML and upsert rows into MySQL.
     """
     root = etree.parse(stream).getroot()
 
-    # -------- Interest rates ------------------------------------------------
+    # Interest rates -
     for rate_el in root.xpath("./interestRates/rate"):
         date_str = rate_el.attrib["date"]
         value_str = rate_el.attrib["value"]
@@ -30,7 +28,7 @@ def import_stream(stream):
         obj.value = v
         db.session.add(obj)
 
-    # -------- Housing prices ------------------------------------------------
+    # Housing prices 
     for price_el in root.xpath("./housingPrices/price"):
         region_name = price_el.attrib["region"]
         type_name = price_el.attrib["type"]
@@ -41,7 +39,7 @@ def import_stream(stream):
         ptype  = PropertyType.query.filter_by(name=type_name).first() or PropertyType(name=type_name)
 
         db.session.add_all([region, ptype])
-        db.session.flush()  # make sure IDs are available
+        db.session.flush()
 
         hp = HousingPrice(
             region=region,
@@ -54,9 +52,8 @@ def import_stream(stream):
     db.session.commit()
 
 
-# ---------------------------------------------------------------------------
-# DATABASE  ➜  XML
-# ---------------------------------------------------------------------------
+# DATABASE  ->  XML
+
 def export_stream():
     root = etree.Element("dataset")
 
@@ -72,7 +69,7 @@ def export_stream():
     for hp in HousingPrice.query.all():
         node = etree.SubElement(hp_wrapper, "price")
         node.set("region", hp.region.name)
-        node.set("type", hp.type.name)           # <-- matches models.py
+        node.set("type", hp.type.name)
         node.set("quarter", hp.quarter)
         node.set("average", f"{hp.average_price:.2f}")
 
